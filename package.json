@@ -1,0 +1,31 @@
+{
+  "name": "metalman",
+  "version": "1.0.0",
+  "description": "Composes configurable methods which are based on middlewares.",
+  "main": "index.js",
+  "keywords": ["middleware", "composition", "commands", "events"],
+  "scripts": {
+    "test": "standard && node ./test"
+  },
+  "author": "Marc Bachmann <marc.brookman@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "standard": "^8.3.0",
+    "tape": "^4.6.2"
+  },
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "standard": "^8.3.0",
+    "tape": "^4.6.2"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/marcbachmann/metalman.git"
+  },
+  "bugs": {
+    "url": "https://github.com/marcbachmann/metalman/issues"
+  },
+  "homepage": "https://github.com/marcbachmann/metalman#readme"
+}

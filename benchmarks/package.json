@@ -1,0 +1,14 @@
+{
+  "private": true,
+  "name": "benchmarks",
+  "version": "1.0.0",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "author": "Marc Bachmann <marc.brookman@gmail.com>",
+  "license": "ISC",
+  "devDependencies": {
+    "ajv": "^4.7.6"
+  }
+}
