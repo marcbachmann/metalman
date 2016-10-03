@@ -1,9 +1,14 @@
 {
   "name": "metalman",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Composes configurable methods which are based on middlewares.",
   "main": "index.js",
-  "keywords": ["middleware", "composition", "commands", "events"],
+  "keywords": [
+    "middleware",
+    "composition",
+    "commands",
+    "events"
+  ],
   "scripts": {
     "test": "standard && node ./test"
   },
