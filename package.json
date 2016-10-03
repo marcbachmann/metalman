@@ -16,10 +16,6 @@
   "directories": {
     "test": "test"
   },
-  "dependencies": {
-    "standard": "^8.3.0",
-    "tape": "^4.6.2"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/marcbachmann/metalman.git"
