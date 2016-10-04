@@ -5,7 +5,7 @@ Composes configurable methods which are based on middlewares.
 
 ## Example method
 
-```
+```js
 // Load middlewares
 var validateSchema = require('metalman/metalman-schema-validation')
 var executeCommand = require('metalman/metalman-command-execution')
@@ -42,7 +42,7 @@ module.exports = {
 
 ## Example middleware
 
-```
+```js
 module.exports = schemaValidation
 
 // The command config directly gets passed to the factory
