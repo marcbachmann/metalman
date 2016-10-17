@@ -17,7 +17,7 @@ function commandFactory (config, opts) {
 
   return function executeCommand (command, done) {
     var callbacked = false
-    var callback = function (err, result) {
+    function callback (err, result) {
       if (callbacked) return
       callbacked = true
       if (err) done(err)
@@ -29,7 +29,7 @@ function commandFactory (config, opts) {
 }
 
 function createMiddlewares (config, opts) {
-  return function (factory, index) {
+  return function executeMiddlewares (factory, index) {
     if (!factory) return
     else if (typeof factory !== 'function') {
       var m = `A middleware factory must be a function. The middleware with index ${index} isn't.`
@@ -41,8 +41,7 @@ function createMiddlewares (config, opts) {
 }
 
 function executeMiddleware (current, middlewares, context, command, callback) {
-  var m = middlewares[current]
-  if (!m) return callback(null, command)
+  if (!middlewares[current]) return callback(null, command)
 
   function next (err, newCommand) {
     if (err) return callback(err)

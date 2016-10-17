@@ -1,0 +1,20 @@
+{
+  "name": "metalman-examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "server.js",
+  "scripts": {
+    "start:server": "node server.js",
+    "start:client": "budo client.js"
+  },
+  "author": "Marc Bachmann <marc.brookman@gmail.com>",
+  "license": "ISC",
+  "dependencies": {
+    "metalman": "file:///Users/marcbachmann/Development/marcbachmann/metalman",
+    "methodman": "^0.2.0",
+    "websocket-stream": "^3.3.0"
+  },
+  "devDependencies": {
+    "budo": "^9.2.1"
+  }
+}

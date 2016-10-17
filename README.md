@@ -7,9 +7,9 @@ Composes configurable methods which are based on middlewares.
 
 ```js
 // Load middlewares
-var validateSchema = require('metalman/metalman-schema-validation')
-var executeCommand = require('metalman/metalman-command-execution')
-var command = require('metalman')([validateSchema, executeCommand])
+const validateSchema = require('metalman/metalman-schema-validation')
+const executeCommand = require('metalman/metalman-command-execution')
+const command = require('metalman')([validateSchema, executeCommand])
 
 module.exports = {
   createUser: command({
@@ -23,7 +23,7 @@ module.exports = {
 
     // This middleware framework only supports
     // one input argument and a callback
-    // We like to keep it simple, so we can stream objects into those methods
+    // We like to keep it simple (and fast), so we can stream objects into those methods
     action: function (cmd, cb) {
       // cmd.id is definitely a string
       // cmd.name is also a string
@@ -49,11 +49,48 @@ module.exports = schemaValidation
 function schemaValidation (commandConfig) {
   // In case the command doesn't need a middleware, just return a falsy value
   if (!commandConfig.schema) return
-  var validator = require('ajv')(commandConfig.schema)
+  const validator = require('ajv')(commandConfig.schema)
 
   return function (command, callback) {
     if (validator(command)) return callback()
     else return callback(new Error(JSON.stringify(validator.errors))
   }
 }
+```
+
+## Example example websocket server
+
+Check out /examples/server.js and /examples/client.js
+
+```js
+const validateSchema = require('metalman/metalman-schema-validation')
+const executeCommand = require('metalman/metalman-command-execution')
+const methodman = require('methodman')
+const metalman = require('metalman')
+const websocket = require('websocket-stream')
+
+const command = metalman([validateSchema, executeCommand])
+const commands = {
+  echo: command({
+    schema: {type: 'string'},
+    action: function (str, callback) {
+      callback(null, str)
+    }
+  })
+}
+
+function onWebsocketStream (stream) {
+  const meth = methodman(stream)
+  meth.commands(commands)
+}
+
+const http = require('http')
+const server = http.createServer(function (req, res) { res.end() })
+websocket.createServer({server}, onWebsocketStream)
+
+const port = process.env.PORT || 0
+server.listen(port, function (err) {
+  if (err) return console.error(err)
+  console.log('Listening on http://localhost:%s', server.address().port)
+})
 ```
