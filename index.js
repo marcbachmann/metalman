@@ -1,9 +1,14 @@
 module.exports = metalman
 
-function metalman (opts) {
-  if (Array.isArray(opts)) opts = {middlewares: opts}
-  else if (!opts) opts = {}
-  if (!opts.middlewares) opts.middlewares = []
+function metalman (conf) {
+  if (typeof conf !== 'object') {
+    throw new Error('metalman(middlewares): A middleware array is required.')
+  }
+
+  var opts = {
+    context: conf.context || null,
+    middlewares: Array.isArray(conf) ? conf : conf.middlewares || []
+  }
 
   return function registerCommand (config) {
     return commandFactory(config, opts)
@@ -24,7 +29,7 @@ function commandFactory (config, opts) {
       else done(null, result)
     }
     var context = opts.context ? Object.create(opts.context) : Object.create(null)
-    executeMiddleware(0, commandMiddlewares, context, command, callback)
+    executeMiddleware(commandMiddlewares, 0, context, command, callback)
   }
 }
 
@@ -40,13 +45,13 @@ function createMiddlewares (config, opts) {
   }
 }
 
-function executeMiddleware (current, middlewares, context, command, callback) {
+function executeMiddleware (middlewares, current, context, command, callback) {
   if (!middlewares[current]) return callback(null, command)
 
   function next (err, newCommand) {
     if (err) return callback(err)
     if (arguments.length === 2) command = newCommand
-    executeMiddleware(current + 1, middlewares, context, command, callback)
+    executeMiddleware(middlewares, current + 1, context, command, callback)
   }
 
   middlewares[current].call(context, command, next)

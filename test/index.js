@@ -1,17 +1,21 @@
 var test = require('tape').test
 
 test('initialization', function (t) {
-  t.plan(3)
+  t.plan(4)
   t.equal(typeof require('../'), 'function')
-  t.equal(typeof require('../')(), 'function')
+  t.equal(typeof require('../')([]), 'function')
 
-  var command = require('../')()
+  t.throws(function () {
+    require('../')()
+  }, 'metalman(middlewares): A middleware array is required.')
+
+  var command = require('../')([])
   t.equal(typeof command(), 'function')
 })
 
 test('noop', function (t) {
   t.plan(2)
-  var command = require('../')()
+  var command = require('../')([])
   var something = command()
   something('foo', function (err, data) {
     t.error(err)
