@@ -7,9 +7,9 @@ Composes configurable methods which are based on middlewares.
 
 ```js
 // Load middlewares
-const validateSchema = require('metalman/metalman-schema-validation')
-const executeCommand = require('metalman/metalman-command-execution')
-const command = require('metalman')([validateSchema, executeCommand])
+const schema = require('metalman-schema')
+const action = require('metalman-action')
+const command = require('metalman')([schema, action])
 
 module.exports = {
   createUser: command({
@@ -63,13 +63,13 @@ function schemaValidation (commandConfig) {
 Check out /examples/server.js and /examples/client.js
 
 ```js
-const validateSchema = require('metalman/metalman-schema-validation')
-const executeCommand = require('metalman/metalman-command-execution')
+const schema = require('metalman-schema')
+const action = require('metalman-action')
 const methodman = require('methodman')
 const metalman = require('metalman')
 const websocket = require('websocket-stream')
 
-const command = metalman([validateSchema, executeCommand])
+const command = metalman([schema, action])
 const commands = {
   echo: command({
     schema: {type: 'string'},

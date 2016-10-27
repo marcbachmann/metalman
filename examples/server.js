@@ -1,10 +1,11 @@
-const validateSchema = require('metalman/metalman-schema-validation')
-const executeCommand = require('metalman/metalman-command-execution')
 const methodman = require('methodman')
-const metalman = require('metalman')
 const websocket = require('websocket-stream')
 
-const command = metalman([validateSchema, executeCommand])
+const metalman = require('metalman')
+const schema = require('metalman-schema')
+const action = require('metalman-action')
+
+const command = metalman([schema, action])
 const commands = {
   echo: command({
     schema: {type: 'string'},
