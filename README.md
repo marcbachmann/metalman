@@ -58,7 +58,7 @@ function schemaValidation (commandConfig) {
 }
 ```
 
-## Example example websocket server
+## Example websocket server
 
 Check out /examples/server.js and /examples/client.js
 
