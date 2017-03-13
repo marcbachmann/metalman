@@ -1,5 +1,7 @@
 # metalman
 
+[![Greenkeeper badge](https://badges.greenkeeper.io/marcbachmann/metalman.svg)](https://greenkeeper.io/)
+
 Composes configurable methods which are based on middlewares.
 
 
