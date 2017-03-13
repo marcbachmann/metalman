@@ -15,7 +15,7 @@
   "author": "Marc Bachmann <marc.brookman@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "standard": "^8.3.0",
+    "standard": "^9.0.1",
     "tape": "^4.6.2"
   },
   "directories": {
