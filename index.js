@@ -15,6 +15,31 @@ function metalman (conf) {
   }
 }
 
+metalman.commands = function (opts) {
+  var all = {}
+  var middlewares = []
+  var command = metalman(middlewares)
+
+  var api = {
+    use: function (middleware) {
+      middlewares.push(middleware)
+    },
+    call: function (name, cmd, callback) {
+      all[name](cmd, callback)
+    },
+    expose: function () {
+      return all
+    },
+    define: function (name, config) {
+      config.name = name
+      all[name] = command(config)
+      return api
+    }
+  }
+
+  return api
+}
+
 function commandFactory (config, opts) {
   var commandMiddlewares = opts.middlewares
     .map(createMiddlewares(config, opts))
