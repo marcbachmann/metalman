@@ -1,36 +1,36 @@
-const test = require('tap').test
+const t = require('tap')
 
 const metalman = require('../')
 const undefinedMiddleware = (config) => (cmd) => undefined
 const echoMiddleware = (config) => (cmd) => cmd
 
-test('initialization', async function (t) {
-  t.equal(typeof metalman, 'function')
-  t.equal(typeof metalman([]), 'function')
+t.test('initialization', async function (t) {
+  t.type(metalman, 'function')
+  t.type(metalman([]), 'function')
 
   t.throws(function () {
     metalman()
   }, 'metalman(middlewares): A middleware array is required.')
 
   const command = metalman([])
-  t.equal(typeof command.define, 'function', 'exposes .define on the instance')
-  t.equal(typeof command.object, 'function', 'exposes .object on the instance')
-  t.equal(typeof command(), 'function', 'returns a function on command construction')
+  t.type(command.define, 'function', 'exposes .define on the instance')
+  t.type(command.object, 'function', 'exposes .object on the instance')
+  t.type(command(), 'function', 'returns a function on command construction')
 })
 
-test('invocation using async/await', async function (t) {
+t.test('invocation using async/await', async function (t) {
   t.plan(2)
 
   const command = metalman([echoMiddleware])
   const something = command()
 
   const promise = something('someInput')
-  t.equal(typeof promise.then, 'function')
+  t.type(promise.then, 'function')
   const data = await promise
   t.equal(data, 'someInput')
 })
 
-test('invocation using callbacks', function (t) {
+t.test('invocation using callbacks', function (t) {
   t.plan(3)
   const command = metalman([echoMiddleware])
   const something = command()
@@ -43,7 +43,7 @@ test('invocation using callbacks', function (t) {
   t.equal(functionReturnValue, undefined, 'Returns undefined when using callback')
 })
 
-test('return values', async function (t) {
+t.test('return values', async function (t) {
   const emptyCommands = metalman([])
   const emptyCommand = emptyCommands()
   const empty = await emptyCommand('Input')
@@ -79,7 +79,7 @@ test('return values', async function (t) {
   t.equal(pong, 'pong', '.action Returns value when there is a response')
 })
 
-test('middleware parameters', async function (t) {
+t.test('middleware parameters', async function (t) {
   t.plan(3)
 
   function middleware (config) {
@@ -96,7 +96,7 @@ test('middleware parameters', async function (t) {
   t.equal(data, 'response')
 })
 
-test('supports sync, async and callback middlewares', async function (t) {
+t.test('supports sync, async and callback middlewares', async function (t) {
   t.plan(3)
 
   function syncMiddleware (config) {
@@ -133,8 +133,8 @@ test('supports sync, async and callback middlewares', async function (t) {
   t.equal(somethingCb, 'foo')
 })
 
-test('returns with errors of middleware', function (t) {
-  t.plan(3)
+t.test('returns with errors of middleware', function (t) {
+  t.plan(6)
 
   const error = new Error('Something')
 
@@ -156,6 +156,12 @@ test('returns with errors of middleware', function (t) {
     }
   }
 
+  function nonErrorThrowMiddleware (config) {
+    return function (cmd) {
+      throw 'something' // eslint-disable-line
+    }
+  }
+
   const syncMiddlewareCommand = metalman([syncMiddleware])
   const syncSomething = syncMiddlewareCommand()
   syncSomething(null, function (err) {
@@ -173,9 +179,17 @@ test('returns with errors of middleware', function (t) {
   cbSomething(null, function (err) {
     t.equal(err, error)
   })
+
+  const throwNonErrorCommand = metalman([nonErrorThrowMiddleware])
+  const errSomething = throwNonErrorCommand()
+  errSomething(null, function (err) {
+    t.ok(err)
+    t.match(err.stack, 'Error: something')
+    t.equal(err.message, 'something')
+  })
 })
 
-test('retains the input value in middlewares when returning undefined', async function (t) {
+t.test('retains the input value in middlewares when returning undefined', async function (t) {
   t.plan(1)
 
   function first (config) {
