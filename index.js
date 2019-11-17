@@ -1,3 +1,5 @@
+const {promisify, callbackify} = require('./util')
+
 module.exports = metalman
 
 function metalman (conf) {
@@ -5,54 +7,114 @@ function metalman (conf) {
     throw new Error('metalman(middlewares): A middleware array is required.')
   }
 
-  var opts = {
+  const opts = {
     context: conf.context || null,
     middlewares: Array.isArray(conf) ? conf : conf.middlewares || []
   }
 
-  return function registerCommand (config) {
-    return commandFactory(config, opts)
+  function registerCommand (config) {
+    return commandFactory('execute', config, opts)
   }
+
+  function createDefineInstance () {
+    const commands = {}
+    Object.defineProperty(commands, 'define', {
+      enumerable: false,
+      writable: false,
+      value: function defineCommand (name, config) {
+        commands[name] = commandFactory(name, config, opts)
+        return commands
+      }
+    })
+    return commands
+  }
+
+  registerCommand.define = function defineCommandObject (name, config) {
+    return createDefineInstance().define(name, config)
+  }
+
+  registerCommand.object = function createCommandObject (methods) {
+    const commands = createDefineInstance()
+    for (const methodName of Object.keys(methods)) {
+      commands.define(methodName, methods[methodName])
+    }
+    return commands
+  }
+
+  return registerCommand
 }
 
-function commandFactory (config, opts) {
-  var commandMiddlewares = opts.middlewares
-    .map(createMiddlewares(config, opts))
+function commandFactory (functionName, config, opts) {
+  const commandMiddlewares = opts.middlewares
+    .map(instantiateMiddleware)
     .filter(Boolean)
 
-  return function executeCommand (command, done) {
-    var callbacked = false
-    function callback (err, result) {
-      if (callbacked) return
-      callbacked = true
-      if (err) done(err)
-      else done(null, result)
-    }
-    var context = opts.context ? Object.create(opts.context) : Object.create(null)
-    executeMiddleware(commandMiddlewares, 0, context, command, callback)
-  }
-}
-
-function createMiddlewares (config, opts) {
-  return function executeMiddlewares (factory, index) {
+  function instantiateMiddleware (factory, index) {
     if (!factory) return
-    else if (typeof factory !== 'function') {
-      var m = `A middleware factory must be a function. The middleware with index ${index} isn't.`
-      throw new Error(m)
+    if (typeof factory === 'function') {
+      if (!factory.name) {
+        Object.defineProperty(factory, 'name', {
+          value: `<anonymous middleware>`
+        })
+      }
+
+      let middleware = factory(config, opts)
+      if (!middleware) return
+
+      if (!middleware.name) {
+        Object.defineProperty(middleware, 'name', {
+          value: `${factory.name}.handler`
+        })
+      }
+
+      if (middleware.length >= 2) middleware = promisify(middleware)
+      return middleware
     }
-    var middleware = factory(config, opts)
-    if (middleware) return middleware
+
+    throw new Error(
+      `A middleware factory must be a function. ` +
+      `The middleware with index ${index} isn't.\n` +
+      `Value: ${JSON.stringify(factory)}`
+    )
   }
+
+  const executeCommandCallbackified = callbackify(executeCommand)
+  async function executeCommand (req, cb) {
+    let res
+    for (const middleware of commandMiddlewares) {
+      try {
+        let val = middleware.call(this, req)
+        if (val && val.then) val = await val
+        if (val !== undefined) res = req = val
+      } catch (err) {
+        throw err
+      }
+    }
+    return res
+  }
+
+  function execute (ctx, cb) {
+    if (cb) return executeCommandCallbackified.call(this, ctx, cb)
+    return executeCommand.call(this, ctx)
+  }
+
+  Object.defineProperty(execute, 'name', {value: functionName})
+  return execute
 }
 
-function executeMiddleware (middlewares, current, context, command, callback) {
-  if (!middlewares[current]) return callback(null, command)
+// The action middleware
+// use it like this:
+//   const metalman = require('metalman')
+//   const commands = metalman([metalman.action])
+metalman.action = function actionMiddleware (config) {
+  return config.action
+}
 
-  function next (err, newCommand) {
-    if (err) return callback(err)
-    if (arguments.length === 2) command = newCommand
-    executeMiddleware(middlewares, current + 1, context, command, callback)
-  }
-
-  middlewares[current].call(context, command, next)
+// A tiny example about how to inject functions that always get executed
+// use it like this:
+//   const metalman = require('metalman')
+//   function someVerification (cmd) { throw new Error('Invalid Command') }
+//   const commands = metalman([metalman.use(someVerification)])
+metalman.use = function useMiddleware (func) {
+  return func
 }

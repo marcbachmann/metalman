@@ -28,5 +28,6 @@
   "bugs": {
     "url": "https://github.com/marcbachmann/metalman/issues"
   },
-  "homepage": "https://github.com/marcbachmann/metalman#readme"
+  "homepage": "https://github.com/marcbachmann/metalman#readme",
+  "dependencies": {}
 }

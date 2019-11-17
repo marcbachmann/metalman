@@ -2,9 +2,9 @@
   "private": true,
   "name": "benchmarks",
   "version": "1.0.0",
-  "main": "server.js",
+  "main": "index.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node index.js"
   },
   "author": "Marc Bachmann <marc.brookman@gmail.com>",
   "license": "ISC",
@@ -12,6 +12,7 @@
     "ajv": "^4.7.6"
   },
   "dependencies": {
-    "fast-safe-stringify": "^1.1.1"
+    "metalman-action": "^1.1.0",
+    "nanobench": "^2.1.1"
   }
 }
