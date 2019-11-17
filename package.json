@@ -9,6 +9,10 @@
     "commands",
     "events"
   ],
+  "files": [
+    "index.js",
+    "util.js"
+  ],
   "scripts": {
     "test": "standard && node ./test"
   },
