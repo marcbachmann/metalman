@@ -16,7 +16,7 @@
   "license": "ISC",
   "devDependencies": {
     "standard": "^11.0.0",
-    "tape": "^4.6.2"
+    "tap": "^14.9.2"
   },
   "directories": {
     "test": "test"
@@ -27,6 +27,11 @@
   },
   "bugs": {
     "url": "https://github.com/marcbachmann/metalman/issues"
+  },
+  "standard": {
+    "ignore": [
+      "benchmarks/node_modules/"
+    ]
   },
   "homepage": "https://github.com/marcbachmann/metalman#readme",
   "dependencies": {}

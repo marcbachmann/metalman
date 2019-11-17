@@ -8,12 +8,12 @@ function metalman (conf) {
   }
 
   const opts = {
-    context: conf.context || null,
-    middlewares: Array.isArray(conf) ? conf : conf.middlewares || []
+    middlewares: Array.isArray(conf) ? conf : conf.middlewares || [],
+    defaults: conf.defaults || {}
   }
 
   function registerCommand (config) {
-    return commandFactory('execute', config, opts)
+    return commandFactory('execute', opts.defaults, config, opts)
   }
 
   function createDefineInstance () {
@@ -22,7 +22,7 @@ function metalman (conf) {
       enumerable: false,
       writable: false,
       value: function defineCommand (name, config) {
-        commands[name] = commandFactory(name, config, opts)
+        commands[name] = commandFactory(name, opts.defaults, config, opts)
         return commands
       }
     })
@@ -38,32 +38,44 @@ function metalman (conf) {
     for (const methodName of Object.keys(methods)) {
       commands.define(methodName, methods[methodName])
     }
-    return commands
+    // We want to have the `define` function removed once we expose
+    // the api, so you can't call it anymore
+    return {...commands}
   }
 
   return registerCommand
 }
 
-function commandFactory (functionName, config, opts) {
+function commandFactory (functionName, defaults, config, opts) {
+  if (config !== undefined && typeof config !== 'object') {
+    throw new Error(
+      `To instantiate a command, you must pass a 'config' parameter ` +
+      `which must be an object.\n` +
+      `You Provided: ${JSON.stringify(config)}`
+    )
+  }
+
+  config = {...opts.defaults, ...config}
+
   const commandMiddlewares = opts.middlewares
     .map(instantiateMiddleware)
     .filter(Boolean)
 
-  function instantiateMiddleware (factory, index) {
-    if (!factory) return
-    if (typeof factory === 'function') {
-      if (!factory.name) {
-        Object.defineProperty(factory, 'name', {
+  function instantiateMiddleware (middlewareFactory, index) {
+    if (!middlewareFactory) return
+    if (typeof middlewareFactory === 'function') {
+      if (!middlewareFactory.name) {
+        Object.defineProperty(middlewareFactory, 'name', {
           value: `<anonymous middleware>`
         })
       }
 
-      let middleware = factory(config, opts)
+      let middleware = middlewareFactory(config, opts)
       if (!middleware) return
 
       if (!middleware.name) {
         Object.defineProperty(middleware, 'name', {
-          value: `${factory.name}.handler`
+          value: `${middlewareFactory.name}.handler`
         })
       }
 
@@ -72,20 +84,20 @@ function commandFactory (functionName, config, opts) {
     }
 
     throw new Error(
-      `A middleware factory must be a function. ` +
-      `The middleware with index ${index} isn't.\n` +
-      `Value: ${JSON.stringify(factory)}`
+      `A middleware factory must be a function, ` +
+      `but the factory with index ${index} isn't.\n` +
+      `You Provided: ${JSON.stringify(middlewareFactory)}`
     )
   }
 
   const executeCommandCallbackified = callbackify(executeCommand)
-  async function executeCommand (req, cb) {
+  async function executeCommand (req) {
     let res
     for (const middleware of commandMiddlewares) {
       try {
-        let val = middleware.call(this, req)
-        if (val && val.then) val = await val
-        if (val !== undefined) res = req = val
+        let _res = middleware.call(this, req)
+        if (_res && _res.then) _res = await _res
+        if (_res !== undefined) res = req = _res
       } catch (err) {
         throw err
       }
@@ -108,13 +120,4 @@ function commandFactory (functionName, config, opts) {
 //   const commands = metalman([metalman.action])
 metalman.action = function actionMiddleware (config) {
   return config.action
-}
-
-// A tiny example about how to inject functions that always get executed
-// use it like this:
-//   const metalman = require('metalman')
-//   function someVerification (cmd) { throw new Error('Invalid Command') }
-//   const commands = metalman([metalman.use(someVerification)])
-metalman.use = function useMiddleware (func) {
-  return func
 }
