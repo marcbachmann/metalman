@@ -1,23 +1,21 @@
-const methodman = require('methodman')
+const Methodman = require('methodman')
 const websocket = require('websocket-stream')
 
-const metalman = require('metalman')
 const schema = require('metalman-schema')
-const action = require('metalman-action')
+const Metalman = require('metalman')
+const metalman = Metalman([schema, Metalman.action])
 
-const command = metalman([schema, action])
-const commands = {
-  echo: command({
+const commands = metalman.object({
+  echo: {
     schema: {type: 'string'},
-    action: function (str, callback) {
+    action (str, callback) {
       callback(null, str)
     }
-  })
-}
+  }
+})
 
 function onWebsocketStream (stream) {
-  const meth = methodman(stream)
-  meth.commands(commands)
+  Methodman(stream).commands(commands)
 }
 
 const http = require('http')
