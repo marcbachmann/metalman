@@ -1,4 +1,4 @@
-const {promisify, callbackify} = require('./util')
+const {promisify, callbackify, wrapError} = require('./util')
 
 module.exports = metalman
 
@@ -92,17 +92,17 @@ function commandFactory (functionName, defaults, config, opts) {
 
   const executeCommandCallbackified = callbackify(executeCommand)
   async function executeCommand (req) {
-    let res
-    for (const middleware of commandMiddlewares) {
-      try {
+    try {
+      let res
+      for (const middleware of commandMiddlewares) {
         let _res = middleware.call(this, req)
         if (_res && _res.then) _res = await _res
         if (_res !== undefined) res = req = _res
-      } catch (err) {
-        throw err
       }
+      return res
+    } catch (err) {
+      throw wrapError(err)
     }
-    return res
   }
 
   function execute (ctx, cb) {
