@@ -3,7 +3,12 @@
 [![Greenkeeper badge](https://badges.greenkeeper.io/marcbachmann/metalman.svg)](https://greenkeeper.io/)
 
 A recursion-free middleware framework for composable methods with native promise support.
+Middlewares are factory functions that should return a command handler function.
 
+Middlewares receive the command config which can be used for initialization and to register command handlers if they like to.
+
+A parameter passed during command invocation runs through all the middlewares until a middleware stops execution using an error.
+Returning `undefined` in a middleware handler means it should continue with the execution of the next middleware without doing any changes on the input parameter.
 
 ## Example method
 
@@ -11,10 +16,10 @@ A recursion-free middleware framework for composable methods with native promise
 const metalman = require('metalman')
 
 // Load middlewares
-// registers a `schema` handler, check the `schema` attribute in the example below
+// registers a `schema` handler, see the `schema` attribute in the example below
 const schema = require('metalman-schema')
 
-// registers an `action` handler, check the `action` attribute in the example below
+// registers an `action` handler, see the `action` attribute in the example below
 // Basically it just proxies the `action` attribute of a command to the middleware factory
 //   e.g. `function action (command) { return command.action }`
 const action = metalman.action
@@ -67,6 +72,8 @@ const metalman = require('metalman')
 const commands = metalman([metalman.action])
 ```
 
+A middleware is a factory that should return a command handler. It receives the config object of a command that's passed using `instance(config)`.
+
 ### metalman.action
 
 The simplest middleware there is. It executes the provided function passed as `action` property on a command config.
@@ -81,6 +88,12 @@ const someCommand = commands({action (param) { throw new Error(param) }})
 // in the example.
 await someCommand('Hello')
 ```
+
+### instance(config)
+
+Constructs a new function using the provided config which gets passed to the middlewares that conditionally can register a middleware.
+
+ The config parameter must be an object.
 
 ### instance.object({...methods})
 
@@ -127,7 +140,7 @@ module.exports = {
 
 ### instance.define('name', config)
 
-Just another helper to declare some commands
+Just another helper to declare some commands.
 e.g.
 ```js
 module.exports = commands
@@ -137,7 +150,8 @@ module.exports = commands
 
 ## Example middleware
 
-The action middleware exposed as `require('metalman').action`
+The action middleware exposed as `require('metalman').action`.
+
 ```js
 function actionMiddleware (config) { return config.action }
 ```
@@ -166,7 +180,7 @@ Check out /examples/server.js and /examples/client.js
 ```js
 const schema = require('metalman-schema')
 const action = require('metalman-action')
-const methodman = require('methodman')
+const Methodman = require('methodman')
 const metalman = require('metalman')
 const websocket = require('websocket-stream')
 
@@ -181,8 +195,8 @@ const commands = {
 }
 
 function onWebsocketStream (stream) {
-  const meth = methodman(stream)
-  meth.commands(commands)
+  const methodman = Methodman(stream)
+  methodman.commands(commands)
 }
 
 const http = require('http')
