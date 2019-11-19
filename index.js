@@ -1,4 +1,5 @@
 const {promisify, callbackify, wrapError} = require('./util')
+const util = require('util')
 
 module.exports = metalman
 
@@ -110,6 +111,7 @@ function commandFactory (functionName, defaults, config, opts) {
     return executeCommand.call(this, ctx)
   }
 
+  execute[promisify.custom] = execute[util.promisify.custom] = executeCommand
   Object.defineProperty(execute, 'name', {value: functionName})
   return execute
 }
@@ -119,5 +121,6 @@ function commandFactory (functionName, defaults, config, opts) {
 //   const metalman = require('metalman')
 //   const commands = metalman([metalman.action])
 metalman.action = function actionMiddleware (config) {
-  return config.action
+  if (!config.action) return
+  return config.action[promisify.custom] || config.action
 }

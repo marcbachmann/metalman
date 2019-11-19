@@ -113,7 +113,7 @@ t.test('supports sync, async and callback middlewares', async function (t) {
 
   function cbMiddleware (config) {
     return function (cmd, cb) {
-      setTimeout(cb, 0, null, cmd)
+      process.nextTick(cb, null, cmd)
     }
   }
 

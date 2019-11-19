@@ -1,28 +1,39 @@
+const util = require('util')
+const promSymbol = util.promisify.method
+const customPromSymbol = Symbol.for('metalman.promisify.custom')
+const customCbSymbol = Symbol.for('util.callbackify.custom')
+
 // A promisify method that
-// - doesn't make use of new Promise and therefore doesn't waste
+// - doesn't make always use of new Promise and therefore doesn't waste
 //   any unnecessary ticks and also results in better stack traces.
 // - Converts primitives to an error instance with a stack trace
 // - Only supports exactly one argument as we don't need more in here
-function promisify (action) {
-  function promisified (cmd) {
-    let thenable, err, res
-    try {
-      let sameTick
-      action.call(this, cmd, function promisifiedCallback (_err, _res) {
-        if (sameTick === false) {
-          if (_err) return thenable.reject(wrapError(_err))
-          return thenable.resolve(_res)
-        } else {
-          sameTick = true
-          err = _err
-          res = _res
-        }
-      })
+function promisify (action, _opts) {
+  const opts = _opts || {}
+  const native = action[promSymbol]
+  const custom = action[customPromSymbol]
+  if (native || custom) return native || custom
 
-      if (sameTick === undefined) {
-        sameTick = false
-        thenable = new Thenable()
-        return thenable
+  function promisified (cmd) {
+    let deferrable, err, res
+
+    function promisifiedCallback (_err, _res) {
+      if (deferrable) {
+        if (_err) deferrable.reject(wrapError(_err))
+        else deferrable.resolve(_res)
+      } else {
+        deferrable = false
+        err = _err
+        res = _res
+      }
+    }
+
+    try {
+      action.call(this, cmd, promisifiedCallback)
+      if (deferrable === undefined) {
+        return new Promise((resolve, reject) => {
+          deferrable = {resolve, reject}
+        })
       }
     } catch (_err) {
       err = _err
@@ -32,9 +43,16 @@ function promisify (action) {
     return res
   }
 
-  Object.defineProperty(promisified, 'name', {value: `${action.name} [as promisified]`})
+  const desc = Object.getOwnPropertyDescriptors(action)
+  const name = desc.name.value || opts.name || '<anonymous>'
+  desc.name.value = `${name} [as promisified]`
+  desc.length.value = 1
+  Object.defineProperties(promisified, desc)
+  action[customPromSymbol] = promisified
   return promisified
 }
+
+promisify.custom = customPromSymbol
 
 function wrapError (maybeError) {
   if (typeof maybeError === 'object') return maybeError
@@ -50,18 +68,6 @@ class WrappedError extends Error {
 
 Object.defineProperty(WrappedError, 'name', {value: 'Error'})
 
-class Thenable {
-  constructor () {
-    this.resolve = undefined
-    this.reject = undefined
-  }
-
-  then (resolve, reject) {
-    this.resolve = resolve
-    this.reject = reject
-  }
-}
-
 function safeToString (obj) {
   try {
     return obj + ''
@@ -72,6 +78,11 @@ function safeToString (obj) {
 
 module.exports = {
   promisify,
-  callbackify: require('util').callbackify,
+  // method,
+  callbackify (func) {
+    const customFunction = func && func[customCbSymbol]
+    if (customFunction) return customFunction
+    return util.callbackify(func)
+  },
   wrapError
 }
