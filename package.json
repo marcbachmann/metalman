@@ -1,6 +1,6 @@
 {
   "name": "metalman",
-  "version": "3.0.0",
+  "version": "3.0.1",
   "description": "Composes configurable methods which are based on middlewares.",
   "main": "index.js",
   "keywords": [
