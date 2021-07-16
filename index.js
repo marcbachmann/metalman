@@ -122,5 +122,5 @@ function commandFactory (functionName, defaults, config, opts) {
 //   const commands = metalman([metalman.action])
 metalman.action = function actionMiddleware (config) {
   if (!config.action) return
-  return config.action[promisify.custom] || config.action
+  return config.action[util.promisify.custom] || config.action
 }
