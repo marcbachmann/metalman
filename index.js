@@ -111,7 +111,7 @@ function commandFactory (functionName, defaults, config, opts) {
     return executeCommand.call(this, ctx)
   }
 
-  execute[promisify.custom] = execute[util.promisify.custom] = executeCommand
+  execute[util.promisify.custom] = executeCommand
   Object.defineProperty(execute, 'name', {value: functionName})
   return execute
 }

@@ -1,7 +1,4 @@
 const util = require('util')
-const promSymbol = util.promisify.method
-const customPromSymbol = Symbol.for('metalman.promisify.custom')
-const customCbSymbol = Symbol.for('util.callbackify.custom')
 
 // A promisify method that
 // - doesn't make always use of new Promise and therefore doesn't waste
@@ -10,14 +7,13 @@ const customCbSymbol = Symbol.for('util.callbackify.custom')
 // - Only supports exactly one argument as we don't need more in here
 function promisify (action, _opts) {
   const opts = _opts || {}
-  const native = action[promSymbol]
-  const custom = action[customPromSymbol]
-  if (native || custom) return native || custom
+  const originalAction = action[util.promisify.method]
+  if (originalAction) return originalAction
 
   function promisified (cmd) {
     let deferrable, err, res
 
-    function promisifiedCallback (_err, _res) {
+    function promisifiedCallbackMetalman (_err, _res) {
       if (deferrable) {
         if (_err) deferrable.reject(wrapError(_err))
         else deferrable.resolve(_res)
@@ -29,7 +25,7 @@ function promisify (action, _opts) {
     }
 
     try {
-      action.call(this, cmd, promisifiedCallback)
+      action.call(this, cmd, promisifiedCallbackMetalman)
       if (deferrable === undefined) {
         return new Promise((resolve, reject) => {
           deferrable = {resolve, reject}
@@ -48,11 +44,8 @@ function promisify (action, _opts) {
   desc.name.value = `${name} [as promisified]`
   desc.length.value = 1
   Object.defineProperties(promisified, desc)
-  action[customPromSymbol] = promisified
   return promisified
 }
-
-promisify.custom = customPromSymbol
 
 function wrapError (maybeError) {
   if (typeof maybeError === 'object') return maybeError
@@ -78,11 +71,6 @@ function safeToString (obj) {
 
 module.exports = {
   promisify,
-  // method,
-  callbackify (func) {
-    const customFunction = func && func[customCbSymbol]
-    if (customFunction) return customFunction
-    return util.callbackify(func)
-  },
+  callbackify: util.callbackify,
   wrapError
 }
