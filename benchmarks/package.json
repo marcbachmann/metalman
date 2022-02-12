@@ -9,7 +9,7 @@
   "author": "Marc Bachmann <marc.brookman@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "ajv": "^4.7.6"
+    "ajv": "^6.12.3"
   },
   "dependencies": {
     "metalman-action": "^1.1.0",
