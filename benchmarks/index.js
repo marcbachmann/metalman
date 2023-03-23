@@ -1,3 +1,4 @@
+'use strict'
 const bench = require('nanobench')
 const command = require('../')([require('metalman-action')])
 

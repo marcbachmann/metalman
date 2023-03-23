@@ -1,3 +1,4 @@
+'use strict'
 const {promisify, callbackify, wrapError} = require('./util')
 const util = require('util')
 

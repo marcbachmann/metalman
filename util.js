@@ -1,3 +1,4 @@
+'use strict'
 const util = require('util')
 
 // A promisify method that
@@ -63,7 +64,7 @@ Object.defineProperty(WrappedError, 'name', {value: 'Error'})
 
 function safeToString (obj) {
   try {
-    return obj + ''
+    return `${obj}`
   } catch (e) {
     return '[no string representation]'
   }

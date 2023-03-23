@@ -1,10 +1,11 @@
-const t = require('tap')
+'use strict'
+const {test} = require('tap')
 
 const metalman = require('../')
 const undefinedMiddleware = (config) => (cmd) => undefined
 const echoMiddleware = (config) => (cmd) => cmd
 
-t.test('initialization', async function (t) {
+test('initialization', async function (t) {
   t.type(metalman, 'function')
   t.type(metalman([]), 'function')
 
@@ -18,7 +19,7 @@ t.test('initialization', async function (t) {
   t.type(command(), 'function', 'returns a function on command construction')
 })
 
-t.test('invocation using async/await', async function (t) {
+test('invocation using async/await', async function (t) {
   t.plan(2)
 
   const command = metalman([echoMiddleware])
@@ -30,7 +31,7 @@ t.test('invocation using async/await', async function (t) {
   t.equal(data, 'someInput')
 })
 
-t.test('invocation using callbacks', function (t) {
+test('invocation using callbacks', function (t) {
   t.plan(3)
   const command = metalman([echoMiddleware])
   const something = command()
@@ -43,7 +44,7 @@ t.test('invocation using callbacks', function (t) {
   t.equal(functionReturnValue, undefined, 'Returns undefined when using callback')
 })
 
-t.test('return values', async function (t) {
+test('return values', async function (t) {
   const emptyCommands = metalman([])
   const emptyCommand = emptyCommands()
   const empty = await emptyCommand('Input')
@@ -79,7 +80,7 @@ t.test('return values', async function (t) {
   t.equal(pong, 'pong', '.action Returns value when there is a response')
 })
 
-t.test('middleware parameters', async function (t) {
+test('middleware parameters', async function (t) {
   t.plan(3)
 
   function middleware (config) {
@@ -96,7 +97,7 @@ t.test('middleware parameters', async function (t) {
   t.equal(data, 'response')
 })
 
-t.test('supports sync, async and callback middlewares', async function (t) {
+test('supports sync, async and callback middlewares', async function (t) {
   t.plan(3)
 
   function syncMiddleware (config) {
@@ -133,7 +134,7 @@ t.test('supports sync, async and callback middlewares', async function (t) {
   t.equal(somethingCb, 'foo')
 })
 
-t.test('returns with errors of middleware', function (t) {
+test('returns with errors of middleware', function (t) {
   t.plan(6)
 
   const error = new Error('Something')
@@ -189,7 +190,7 @@ t.test('returns with errors of middleware', function (t) {
   })
 })
 
-t.test('retains the input value in middlewares when returning undefined', async function (t) {
+test('retains the input value in middlewares when returning undefined', async function (t) {
   t.plan(1)
 
   function first (config) {

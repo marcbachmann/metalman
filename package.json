@@ -14,13 +14,13 @@
     "util.js"
   ],
   "scripts": {
-    "test": "standard && node ./test"
+    "test": "node ./test",
+    "lint": "eslint ."
   },
   "author": "Marc Bachmann <marc.brookman@gmail.com>",
   "license": "ISC",
   "devDependencies": {
-    "standard": "^11.0.0",
-    "tap": "^14.9.2"
+    "tap": "^16.3.4"
   },
   "directories": {
     "test": "test"
@@ -37,6 +37,5 @@
       "benchmarks/node_modules/"
     ]
   },
-  "homepage": "https://github.com/marcbachmann/metalman#readme",
-  "dependencies": {}
+  "homepage": "https://github.com/marcbachmann/metalman#readme"
 }

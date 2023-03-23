@@ -1,3 +1,4 @@
+'use strict'
 const Methodman = require('methodman')
 const websocket = require('websocket-stream')
 

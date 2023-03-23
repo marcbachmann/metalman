@@ -1,3 +1,4 @@
+'use strict'
 const websocket = require('websocket-stream')
 const methodman = require('methodman')
 const ws = websocket('ws://localhost:8080')
